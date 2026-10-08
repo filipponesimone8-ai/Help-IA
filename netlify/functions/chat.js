@@ -19,7 +19,7 @@ exports.handler = async (event) => {
     const systemPrompt = `Sei un assistente esperto. L'utente sta chiedendo aiuto nella categoria: "${safeContext}". Rispondi in italiano, in modo chiaro, pratico e utile. Se è un problema di salute, ricorda sempre di consultare un medico. Sii conciso ma completo.`;
 
     // Lista di modelli da provare in ordine (dal più nuovo al più stabile)
-    const modelli = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+    const modelli = ["gemini-3.8-pro", "gemini-3.8-flash", "gemini-2.5-flash"];
     let ultimoErrore = "Nessun modello disponibile";
 
     for (const modello of modelli) {
