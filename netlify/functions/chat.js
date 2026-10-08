@@ -15,6 +15,13 @@ exports.handler = async (event) => {
     // 3. Leggi la chiave API OpenRouter da Netlify
     const apiKey = process.env.OPENROUTER_API_KEY;
 
+console.log(
+  "OPENROUTER_API_KEY presente:",
+  !!apiKey,
+  "lunghezza:",
+  apiKey ? apiKey.length : 0
+);
+
     // 4. Controlli di sicurezza
     if (!apiKey) {
       return {
