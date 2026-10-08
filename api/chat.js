@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     ];
 
     const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
+      "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
           "Authorization": "Bearer " + apiKey
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "openai/gpt-4o-mini",
           messages: messages,
           temperature: 0.7
         })
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errText = await response.text();
       return res.status(response.status).json({
-        error: "Errore OpenAI: " + errText.slice(0, 300)
+        error: "Errore OpenRouter: " + errText.slice(0, 300)
       });
     }
 
