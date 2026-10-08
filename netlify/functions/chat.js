@@ -1,65 +1,58 @@
 // netlify/functions/chat.js
 exports.handler = async (event) => {
-  // 1. Accetta solo POST
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
   try {
-    // 2. Leggi i dati inviati dal sito
     const { context, userText } = JSON.parse(event.body);
-
-    // 3. Leggi la chiave API da Netlify
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // 4. Controlli di sicurezza
     if (!apiKey) {
-      return { 
-        statusCode: 500, 
-        body: JSON.stringify({ error: "Chiave API mancante. Controlla le variabili su Netlify." }) 
-      };
+      return { statusCode: 500, body: JSON.stringify({ error: "Chiave API mancante." }) };
     }
     if (!userText) {
-      return { 
-        statusCode: 400, 
-        body: JSON.stringify({ error: "Testo mancante" }) 
-      };
+      return { statusCode: 400, body: JSON.stringify({ error: "Testo mancante" }) };
     }
 
-    // 5. Preparo il prompt per l'IA
     const safeContext = context ? String(context) : "Generale";
     const systemPrompt = `Sei un assistente esperto. L'utente sta chiedendo aiuto nella categoria: "${safeContext}". Rispondi in italiano, in modo chiaro, pratico e utile. Se è un problema di salute, ricorda sempre di consultare un medico. Sii conciso ma completo.`;
 
-    // 6. Chiamo Google Gemini
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: systemPrompt + "\n\nDomanda utente: " + userText }]
-        }]
-      })
-    });
+    // Lista di modelli da provare in ordine (dal più nuovo al più stabile)
+    const modelli = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+    let ultimoErrore = "Nessun modello disponibile";
 
-    const data = await response.json();
+    for (const modello of modelli) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modello}:generateContent?key=${apiKey}`;
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + "\n\nDomanda utente: " + userText }] }]
+        })
+      });
 
-    // 7. Se Google risponde con errore, lo mostro
-    if (!response.ok) {
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: data.error?.message || "Errore da Google" })
-      };
+      const data = await response.json();
+
+      // Se il modello funziona, restituisco la risposta
+      if (response.ok) {
+        const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Nessuna risposta.";
+        return {
+          statusCode: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reply: botReply })
+        };
+      }
+
+      // Altrimenti salvo l'errore e provo il prossimo modello
+      ultimoErrore = data.error?.message || "Errore sconosciuto";
     }
 
-    // 8. Estraggo la risposta e la restituisco al sito
-    const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Nessuna risposta.";
-    
+    // Se nessun modello ha funzionato, restituisco l'ultimo errore
     return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reply: botReply })
+      statusCode: 503,
+      body: JSON.stringify({ error: "Tutti i modelli sono occupati. Riprova tra poco. Dettagli: " + ultimoErrore })
     };
 
   } catch (error) {
