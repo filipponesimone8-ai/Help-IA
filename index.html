@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HelpIA">
+
+<title>HelpIA</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  color: #172033;
+
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(92,225,230,.55),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 90% 15%,
+      rgba(145,92,255,.45),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(255,183,77,.40),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #eef8ff 0%,
+      #f5efff 48%,
+      #fff8ec 100%
+    );
+
+  background-attachment: fixed;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+.app {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: 50px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 12px 0 18px;
+
+  position: sticky;
+  top: 0;
+
+  background: rgba(245,248,255,.72);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  z-index: 10;
+}
+
+header h1 {
+  font-size: 27px;
+  margin: 0;
+
+  font-weight: 800;
+
+  letter-spacing: -.8px;
+
+  color: #182238;
+}
+
+header h1 span {
+  background:
+    linear-gradient(
+      135deg,
+      #4776ff,
+      #9b51e0
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+
+  font-size: 13px;
+  color: #697386;
+
+  margin-bottom: 14px;
+
+  min-height: 20px;
+}
+
+.crumbs b {
+  color: #4776ff;
+  font-weight: 700;
+}
+
+.crumbs span.sep {
+  opacity: .5;
+}
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(140px, 1fr));
+
+  gap: 12px;
+}
+
+.card {
+  background: rgba(255,255,255,.58);
+
+  border:
+    1px solid
+    rgba(255,255,255,.72);
+
+  box-shadow:
+    0 10px 30px rgba(62,72,104,.10),
+    inset 0 1px 0 rgba(255,255,255,.65);
+
+  border-radius: 20px;
+
+  padding: 20px 14px;
+
+  text-align: center;
+
+  cursor: pointer;
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease,
+    border-color .15s ease;
+
+  user-select: none;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 34px rgba(62,72,104,.16);
+}
+
+.card:active {
+  transform: scale(.96);
+  border-color: #6d8dff;
+}
+
+.card .emoji {
+  font-size: 32px;
+
+  display: block;
+
+  margin-bottom: 9px;
+}
+
+.card .label {
+  font-size: 14px;
+
+  font-weight: 700;
+
+  line-height: 1.25;
+}
+
+.back {
+  background: rgba(255,255,255,.55);
+
+  border:
+    1px solid
+    rgba(255,255,255,.75);
+
+  color: #697386;
+
+  padding: 9px 15px;
+
+  border-radius: 12px;
+
+  font-size: 13px;
+
+  margin-bottom: 14px;
+
+  cursor: pointer;
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.leaf-title {
+  font-size: 18px;
+
+  font-weight: 800;
+
+  margin: 6px 0 14px;
+
+  color: #202a40;
+}
+
+textarea {
+  width: 100%;
+
+  min-height: 120px;
+
+  background: rgba(255,255,255,.68);
+
+  color: #172033;
+
+  border:
+    1px solid
+    rgba(255,255,255,.9);
+
+  border-radius: 17px;
+
+  padding: 15px;
+
+  font-size: 15px;
+
+  font-family: inherit;
+
+  resize: vertical;
+
+  box-shadow:
+    0 8px 24px rgba(62,72,104,.08);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+textarea::placeholder {
+  color: #8993a6;
+}
+
+textarea:focus {
+  outline: none;
+
+  border-color: #7190ff;
+
+  box-shadow:
+    0 0 0 3px rgba(113,144,255,.14);
+}
+
+.send {
+  margin-top: 12px;
+
+  width: 100%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4776ff,
+      #8d5cf6
+    );
+
+  color: #fff;
+
+  border: none;
+
+  padding: 15px;
+
+  border-radius: 15px;
+
+  font-size: 16px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 24px rgba(83,105,225,.28);
+}
+
+.send:active {
+  transform: scale(.98);
+}
+
+.send:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.answer {
+  margin-top: 16px;
+
+  background: rgba(255,255,255,.68);
+
+  border:
+    1px solid
+    rgba(255,255,255,.85);
+
+  border-radius: 17px;
+
+  padding: 17px;
+
+  font-size: 15px;
+
+  line-height: 1.6;
+
+  white-space: pre-wrap;
+
+  word-wrap: break-word;
+
+  display: none;
+
+  box-shadow:
+    0 10px 28px rgba(62,72,104,.10);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.answer.show {
+  display: block;
+}
+
+.answer.loading {
+  color: #68748a;
+  font-style: italic;
+}
+
+.youtube-button {
+  display: block;
+
+  margin-top: 16px;
+
+  padding: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff0033,
+      #c90028
+    );
+
+  color: white;
+
+  text-decoration: none;
+
+  text-align: center;
+
+  font-weight: 800;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 8px 18px rgba(210,0,40,.22);
+
+  transition: transform .12s ease;
+}
+
+.youtube-button:active {
+  transform: scale(.97);
+}
+
+.memory-note {
+  margin-top: 10px;
+
+  font-size: 12px;
+
+  color: #7b8598;
+
+  text-align: center;
+}
+
+@media (max-width: 420px) {
+
+  .app {
+    padding: 12px;
+  }
+
+  .grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    gap: 10px;
+  }
+
+  .card {
+    padding: 17px 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <h1>Help<span>IA</span></h1>
+</header>
+
+<div
+  class="crumbs"
+  id="crumbs">
+</div>
+
+<button
+  class="back"
+  id="backBtn"
+  style="display:none"
+  onclick="goBack()"
+>
+  ← Indietro
+</button>
+
+<div id="content"></div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   CATEGORIE
+   ========================================================= */
+
+const TREE = [
+
+  {
+    label: "Salute",
+    emoji: "🏥",
+    children: [
+
+      {
+        label: "Fisico",
+        emoji: "💪",
+        children: [
+
+          {
+            label: "Gambe",
+            emoji: "🦵",
+            prompt: "problemi alle gambe"
+          },
+
+          {
+            label: "Braccia",
+            emoji: "💪",
+            prompt: "problemi alle braccia"
+          },
+
+          {
+            label: "Occhi",
+            emoji: "👁️",
+            prompt: "problemi agli occhi"
+          },
+
+          {
+            label: "Seno",
+            emoji: "🩺",
+            prompt: "problemi al seno"
+          },
+
+          {
+            label: "Testa",
+            emoji: "🧠",
+            prompt: "problemi alla testa"
+          },
+
+          {
+            label: "Schiena",
+            emoji: "🦴",
+            prompt: "problemi alla schiena"
+          },
+
+          {
+            label: "Cuore",
+            emoji: "❤️",
+            prompt: "problemi cardiaci"
+          },
+
+          {
+            label: "Stomaco",
+            emoji: "🫃",
+            prompt: "problemi allo stomaco"
+          },
+
+          {
+            label: "Pelle",
+            emoji: "🧴",
+            prompt: "problemi alla pelle"
+          },
+
+          {
+            label: "Denti",
+            emoji: "🦷",
+            prompt: "problemi ai denti"
+          }
+
+        ]
+      },
+
+      {
+        label: "Psicologico",
+        emoji: "🧠",
+        children: [
+
+          {
+            label: "Ansia",
+            emoji: "😰",
+            prompt: "ansia"
+          },
+
+          {
+            label: "Depressione",
+            emoji: "😔",
+            prompt: "depressione"
+          },
+
+          {
+            label: "Stress",
+            emoji: "😫",
+            prompt: "stress"
+          },
+
+          {
+            label: "Insonnia",
+            emoji: "🌙",
+            prompt: "insonnia"
+          },
+
+          {
+            label: "Attacchi di panico",
+            emoji: "😱",
+            prompt: "attacchi di panico"
+          },
+
+          {
+            label: "Autostima",
+            emoji: "🪞",
+            prompt: "autostima"
+          }
+
+        ]
+      }
+
+    ]
+  },
+
+  {
+    label: "Motori",
+    emoji: "🔧",
+    children: [
+
+      {
+        label: "Auto",
+        emoji: "🚗",
+        children: [
+
+          {
+            label: "Motore",
+            emoji: "⚙️",
+            prompt: "problemi al motore auto"
+          },
+
+          {
+            label: "Freni",
+            emoji: "🛑",
+            prompt: "problemi ai freni auto"
+          },
+
+          {
+            label: "Elettronica",
+            emoji: "🔌",
+            prompt: "problemi elettronica auto"
+          },
+
+          {
+            label: "Carrozzeria",
+            emoji: "🚙",
+            prompt: "problemi carrozzeria auto"
+          },
+
+          {
+            label: "Cambio",
+            emoji: "🔀",
+            prompt: "problemi al cambio auto"
+          },
+
+          {
+            label: "Sospensioni",
+            emoji: "🛞",
+            prompt: "problemi alle sospensioni auto"
+          }
+
+        ]
+      },
+
+      {
+        label: "Moto",
+        emoji: "🏍️",
+        children: [
+
+          {
+            label: "Motore",
+            emoji: "⚙️",
+            prompt: "problemi motore moto"
+          },
+
+          {
+            label: "Freni",
+            emoji: "🛑",
+            prompt: "problemi freni moto"
+          },
+
+          {
+            label: "Trasmissione",
+            emoji: "⛓️",
+            prompt: "problemi trasmissione moto"
+          },
+
+          {
+            label: "Elettronica",
+            emoji: "🔌",
+            prompt: "problemi elettronica moto"
+          }
+
+        ]
+      },
+
+      {
+        label: "Camion",
+        emoji: "🚚",
+        children: [
+
+          {
+            label: "Motore",
+            emoji: "⚙️",
+            prompt: "problemi motore camion"
+          },
+
+          {
+            label: "Freni",
+            emoji: "🛑",
+            prompt: "problemi freni camion"
+          },
+
+          {
+            label: "Rimorchio",
+            emoji: "🚛",
+            prompt: "problemi rimorchio"
+          }
+
+        ]
+      },
+
+      {
+        label: "Bicicletta",
+        emoji: "🚲",
+        prompt: "problemi bicicletta"
+      },
+
+      {
+        label: "Barca",
+        emoji: "⛵",
+        prompt: "problemi barca"
+      }
+
+    ]
+  },
+
+  {
+    label: "Animali",
+    emoji: "🐾",
+    children: [
+
+      {
+        label: "Cane",
+        emoji: "🐕",
+        children: [
+
+          {
+            label: "Salute",
+            emoji: "🩺",
+            prompt: "salute cane"
+          },
+
+          {
+            label: "Comportamento",
+            emoji: "🧠",
+            prompt: "comportamento cane"
+          },
+
+          {
+            label: "Alimentazione",
+            emoji: "🍖",
+            prompt: "alimentazione cane"
+          },
+
+          {
+            label: "Addestramento",
+            emoji: "🎾",
+            prompt: "addestramento cane"
+          }
+
+        ]
+      },
+
+      {
+        label: "Gatto",
+        emoji: "🐈",
+        children: [
+
+          {
+            label: "Salute",
+            emoji: "🩺",
+            prompt: "salute gatto"
+          },
+
+          {
+            label: "Comportamento",
+            emoji: "🧠",
+            prompt: "comportamento gatto"
+          },
+
+          {
+            label: "Alimentazione",
+            emoji: "🐟",
+            prompt: "alimentazione gatto"
+          }
+
+        ]
+      },
+
+      {
+        label: "Uccelli",
+        emoji: "🐦",
+        children: [
+
+          {
+            label: "Salute",
+            emoji: "🩺",
+            prompt: "salute uccelli"
+          },
+
+          {
+            label: "Alimentazione",
+            emoji: "🌾",
+            prompt: "alimentazione uccelli"
+          }
+
+        ]
+      },
+
+      {
+        label: "Pesci",
+        emoji: "🐠",
+        prompt: "pesci"
+      },
+
+      {
+        label: "Rettili",
+        emoji: "🦎",
+        prompt: "rettili"
+      },
+
+      {
+        label: "Cavalli",
+        emoji: "🐴",
+        prompt: "cavalli"
+      }
+
+    ]
+  },
+
+  {
+    label: "Meteorologia",
+    emoji: "🌦️",
+    children: [
+
+      {
+        label: "Previsioni",
+        emoji: "📅",
+        prompt: "previsioni meteo"
+      },
+
+      {
+        label: "Eventi estremi",
+        emoji: "⛈️",
+        prompt: "eventi meteo estremi"
+      },
+
+      {
+        label: "Clima",
+        emoji: "🌍",
+        prompt: "clima"
+      },
+
+      {
+        label: "Mare",
+        emoji: "🌊",
+        prompt: "condizioni mare"
+      }
+
+    ]
+  },
+
+  {
+    label: "Lavoro",
+    emoji: "💼",
+    children: [
+
+      {
+        label: "Meccanico",
+        emoji: "🔧",
+        prompt: "lavoro meccanico"
+      },
+
+      {
+        label: "Ambientale",
+        emoji: "🌱",
+        prompt: "lavoro ambientale"
+      },
+
+      {
+        label: "Logistico",
+        emoji: "📦",
+        prompt: "lavoro logistico"
+      },
+
+      {
+        label: "Informatico",
+        emoji: "💻",
+        prompt: "lavoro informatico"
+      },
+
+      {
+        label: "Sanitario",
+        emoji: "🏥",
+        prompt: "lavoro sanitario"
+      },
+
+      {
+        label: "Edile",
+        emoji: "🏗️",
+        prompt: "lavoro edile"
+      },
+
+      {
+        label: "Legale",
+        emoji: "⚖️",
+        prompt: "lavoro legale"
+      },
+
+      {
+        label: "Contabilità",
+        emoji: "📊",
+        prompt: "contabilità"
+      },
+
+      {
+        label: "Insegnamento",
+        emoji: "📚",
+        prompt: "insegnamento"
+      },
+
+      {
+        label: "Ristorazione",
+        emoji: "🍽️",
+        prompt: "lavoro ristorazione"
+      }
+
+    ]
+  },
+
+  {
+    label: "Cucina",
+    emoji: "🍝",
+    children: [
+
+      {
+        label: "Italiana",
+        emoji: "🇮🇹",
+        children: [
+
+          {
+            label: "Nord",
+            emoji: "🏔️",
+            prompt: "cucina italiana del nord"
+          },
+
+          {
+            label: "Centro",
+            emoji: "🏛️",
+            prompt: "cucina italiana del centro"
+          },
+
+          {
+            label: "Sud",
+            emoji: "🌋",
+            prompt: "cucina italiana del sud"
+          },
+
+          {
+            label: "Isole",
+            emoji: "🏝️",
+            prompt: "cucina italiana delle isole"
+          }
+
+        ]
+      },
+
+      {
+        label: "Brasiliana",
+        emoji: "🇧🇷",
+        prompt: "cucina brasiliana"
+      },
+
+      {
+        label: "Spagnola",
+        emoji: "🇪🇸",
+        prompt: "cucina spagnola"
+      },
+
+      {
+        label: "Francese",
+        emoji: "🇫🇷",
+        prompt: "cucina francese"
+      },
+
+      {
+        label: "Inglese",
+        emoji: "🇬🇧",
+        prompt: "cucina inglese"
+      },
+
+      {
+        label: "Tedesca",
+        emoji: "🇩🇪",
+        prompt: "cucina tedesca"
+      },
+
+      {
+        label: "Giapponese",
+        emoji: "🇯🇵",
+        prompt: "cucina giapponese"
+      },
+
+      {
+        label: "Cinese",
+        emoji: "🇨🇳",
+        prompt: "cucina cinese"
+      },
+
+      {
+        label: "Indiana",
+        emoji: "🇮🇳",
+        prompt: "cucina indiana"
+      },
+
+      {
+        label: "Messicana",
+        emoji: "🇲🇽",
+        prompt: "cucina messicana"
+      },
+
+      {
+        label: "Greca",
+        emoji: "🇬🇷",
+        prompt: "cucina greca"
+      },
+
+      {
+        label: "Araba",
+        emoji: "🇸🇦",
+        prompt: "cucina araba"
+      },
+
+      {
+        label: "Africana",
+        emoji: "🌍",
+        prompt: "cucina africana"
+      },
+
+      {
+        label: "Americana",
+        emoji: "🇺🇸",
+        prompt: "cucina americana"
+      }
+
+    ]
+  },
+
+  {
+    label: "Tecnologia",
+    emoji: "📱",
+    children: [
+
+      {
+        label: "Cellulari",
+        emoji: "📱",
+        children: [
+
+          {
+            label: "Android",
+            emoji: "🤖",
+            children: [
+
+              {
+                label: "Samsung",
+                emoji: "📱",
+                prompt: "Samsung Android"
+              },
+
+              {
+                label: "Xiaomi",
+                emoji: "📱",
+                prompt: "Xiaomi Android"
+              },
+
+              {
+                label: "Google Pixel",
+                emoji: "📱",
+                prompt: "Google Pixel"
+              },
+
+              {
+                label: "Huawei",
+                emoji: "📱",
+                prompt: "Huawei"
+              },
+
+              {
+                label: "Oppo",
+                emoji: "📱",
+                prompt: "Oppo"
+              },
+
+              {
+                label: "OnePlus",
+                emoji: "📱",
+                prompt: "OnePlus"
+              },
+
+              {
+                label: "Altro Android",
+                emoji: "📱",
+                prompt: "altro Android"
+              }
+
+            ]
+          },
+
+          {
+            label: "iOS",
+            emoji: "🍎",
+            children: [
+
+              {
+                label: "iPhone",
+                emoji: "📱",
+                prompt: "iPhone"
+              },
+
+              {
+                label: "iPad",
+                emoji: "📱",
+                prompt: "iPad"
+              },
+
+              {
+                label: "Apple Watch",
+                emoji: "⌚",
+                prompt: "Apple Watch"
+              },
+
+              {
+                label: "AirPods",
+                emoji: "🎧",
+                prompt: "AirPods"
+              }
+
+            ]
+          }
+
+        ]
+      },
+
+      {
+        label: "Computer",
+        emoji: "💻",
+        children: [
+
+          {
+            label: "Windows",
+            emoji: "🪟",
+            prompt: "Windows"
+          },
+
+          {
+            label: "macOS",
+            emoji: "🍎",
+            prompt: "macOS"
+          },
+
+          {
+            label: "Linux",
+            emoji: "🐧",
+            prompt: "Linux"
+          }
+
+        ]
+      },
+
+      {
+        label: "Tablet",
+        emoji: "📱",
+        prompt: "tablet"
+      },
+
+      {
+        label: "Console",
+        emoji: "🎮",
+        prompt: "console di gioco"
+      },
+
+      {
+        label: "Smart TV",
+        emoji: "📺",
+        prompt: "Smart TV"
+      },
+
+      {
+        label: "Altro",
+        emoji: "🔌",
+        prompt: "altra tecnologia"
+      }
+
+    ]
+  },
+
+  /* =========================================================
+     MUSICA
+     ========================================================= */
+
+  {
+    label: "Musica",
+    emoji: "🎵",
+    children: [
+
+      {
+        label: "Generi musicali",
+        emoji: "🎧",
+        children: [
+
+          {
+            label: "Pop",
+            emoji: "🎤",
+            prompt: "musica pop"
+          },
+
+          {
+            label: "Rock",
+            emoji: "🎸",
+            prompt: "musica rock"
+          },
+
+          {
+            label: "Rap / Hip Hop",
+            emoji: "🎙️",
+            prompt: "rap e hip hop"
+          },
+
+          {
+            label: "Classica",
+            emoji: "🎻",
+            prompt: "musica classica"
+          },
+
+          {
+            label: "Jazz",
+            emoji: "🎷",
+            prompt: "jazz"
+          },
+
+          {
+            label: "Elettronica",
+            emoji: "🎛️",
+            prompt: "musica elettronica"
+          },
+
+          {
+            label: "Reggaeton",
+            emoji: "🔥",
+            prompt: "reggaeton"
+          },
+
+          {
+            label: "Metal",
+            emoji: "🤘",
+            prompt: "heavy metal e metal"
+          },
+
+          {
+            label: "Indie",
+            emoji: "🎶",
+            prompt: "musica indie"
+          },
+
+          {
+            label: "Italiana",
+            emoji: "🇮🇹",
+            prompt: "musica italiana"
+          }
+
+        ]
+      },
+
+      {
+        label: "Strumenti",
+        emoji: "🎸",
+        children: [
+
+          {
+            label: "Chitarra",
+            emoji: "🎸",
+            prompt: "chitarra"
+          },
+
+          {
+            label: "Pianoforte",
+            emoji: "🎹",
+            prompt: "pianoforte"
+          },
+
+          {
+            label: "Batteria",
+            emoji: "🥁",
+            prompt: "batteria"
+          },
+
+          {
+            label: "Violino",
+            emoji: "🎻",
+            prompt: "violino"
+          },
+
+          {
+            label: "Basso",
+            emoji: "🎸",
+            prompt: "basso elettrico"
+          },
+
+          {
+            label: "Canto",
+            emoji: "🎤",
+            prompt: "canto e tecnica vocale"
+          }
+
+        ]
+      },
+
+      {
+        label: "Testi",
+        emoji: "📝",
+        prompt: "scrittura e testi musicali"
+      },
+
+      {
+        label: "Video",
+        emoji: "🎬",
+        prompt: "video musicali e tutorial musicali"
+      },
+
+      {
+        label: "Composizione",
+        emoji: "🎼",
+        children: [
+
+          {
+            label: "Scrivere canzoni",
+            emoji: "✍️",
+            prompt: "scrittura di canzoni"
+          },
+
+          {
+            label: "Accordi",
+            emoji: "🎹",
+            prompt: "accordi musicali"
+          },
+
+          {
+            label: "Melodie",
+            emoji: "🎼",
+            prompt: "creazione di melodie"
+          }
+
+        ]
+      },
+
+      {
+        label: "Produzione",
+        emoji: "🎚️",
+        children: [
+
+          {
+            label: "Home recording",
+            emoji: "🏠",
+            prompt: "home recording"
+          },
+
+          {
+            label: "Mixing",
+            emoji: "🎚️",
+            prompt: "mixing musicale"
+          },
+
+          {
+            label: "Mastering",
+            emoji: "🔊",
+            prompt: "mastering musicale"
+          },
+
+          {
+            label: "DJ",
+            emoji: "🎧",
+            prompt: "DJ e musica elettronica"
+          }
+
+        ]
+      },
+
+      {
+        label: "Consigli musicali",
+        emoji: "⭐",
+        prompt: "consigli musicali"
+      },
+
+      {
+        label: "Artisti e album",
+        emoji: "💿",
+        prompt: "artisti e album musicali"
+      }
+
+    ]
+  }
+
+];
+
+
+/* =========================================================
+   STATO
+   ========================================================= */
+
+let currentPath = [];
+
+let currentLeafPrompt = null;
+
+let conversationHistory = [];
+
+const contentEl =
+  document.getElementById("content");
+
+const crumbsEl =
+  document.getElementById("crumbs");
+
+const backBtn =
+  document.getElementById("backBtn");
+
+
+/* =========================================================
+   NAVIGAZIONE
+   ========================================================= */
+
+function getNodeAtPath(path) {
+
+  let node = {
+    children: TREE
+  };
+
+  for (const i of path) {
+    node = node.children[i];
+  }
+
+  return node;
+}
+
+
+function render() {
+
+  crumbsEl.innerHTML = "";
+
+  contentEl.innerHTML = "";
+
+  currentLeafPrompt = null;
+
+  let crumbParts = ["Home"];
+
+  let node = {
+    children: TREE,
+    label: "Home"
+  };
+
+  for (const i of currentPath) {
+
+    node = node.children[i];
+
+    crumbParts.push(node.label);
+  }
+
+  crumbsEl.innerHTML =
+    crumbParts.map((p, idx) =>
+
+      idx === crumbParts.length - 1
+
+        ? `<b>${p}</b>`
+
+        : `<span>${p}</span>
+           <span class="sep">›</span>`
+
+    ).join(" ");
+
+  backBtn.style.display =
+    currentPath.length
+      ? "block"
+      : "none";
+
+  const current =
+    getNodeAtPath(currentPath);
+
+  if (current.prompt) {
+
+    currentLeafPrompt =
+      current.prompt;
+
+    renderLeaf(current);
+
+    return;
+  }
+
+  const grid =
+    document.createElement("div");
+
+  grid.className = "grid";
+
+  current.children.forEach(
+    (child, idx) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className = "card";
+
+      card.innerHTML =
+        `<span class="emoji">
+          ${child.emoji}
+        </span>
+        <span class="label">
+          ${child.label}
+        </span>`;
+
+      card.onclick = () => {
+
+        currentPath.push(idx);
+
+        conversationHistory = [];
+
+        render();
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      };
+
+      grid.appendChild(card);
+    }
+  );
+
+  contentEl.appendChild(grid);
+}
+
+
+function goBack() {
+
+  if (currentPath.length) {
+
+    currentPath.pop();
+
+    conversationHistory = [];
+
+    render();
+  }
+}
+
+
+/* =========================================================
+   FOGLIA
+   ========================================================= */
+
+function renderLeaf(node) {
+
+  const title =
+    document.createElement("div");
+
+  title.className =
+    "leaf-title";
+
+  title.textContent =
+    `${node.emoji} ${node.label} — descrivi cosa ti serve`;
+
+  contentEl.appendChild(title);
+
+
+  const ta =
+    document.createElement("textarea");
+
+  ta.placeholder =
+    "Scrivi qui la tua richiesta...";
+
+  contentEl.appendChild(ta);
+
+
+  const btn =
+    document.createElement("button");
+
+  btn.className = "send";
+
+  btn.textContent =
+    "Chiedi all'IA";
+
+  contentEl.appendChild(btn);
+
+
+  const ans =
+    document.createElement("div");
+
+  ans.className = "answer";
+
+  contentEl.appendChild(ans);
+
+
+  const memoryNote =
+    document.createElement("div");
+
+  memoryNote.className =
+    "memory-note";
+
+  memoryNote.textContent =
+    "🧠 HelpIA ricorda questa conversazione.";
+
+  contentEl.appendChild(memoryNote);
+
+
+  btn.onclick = async () => {
+
+    const text =
+      ta.value.trim();
+
+    if (!text) {
+
+      ta.focus();
+
+      return;
+    }
+
+    btn.disabled = true;
+
+    btn.textContent =
+      "Sto pensando...";
+
+    ans.className =
+      "answer show loading";
+
+    ans.textContent =
+      "⏳ L'IA sta elaborando la risposta...";
+
+
+    try {
+
+      const result =
+        await askAI(
+          currentLeafPrompt,
+          text,
+          conversationHistory
+        );
+
+      const reply =
+        result.reply ||
+        "Nessuna risposta ricevuta.";
+
+
+      conversationHistory.push({
+        role: "user",
+        content: text
+      });
+
+
+      conversationHistory.push({
+        role: "assistant",
+        content: reply
+      });
+
+
+      if (
+        conversationHistory.length > 12
+      ) {
+
+        conversationHistory =
+          conversationHistory.slice(-12);
+      }
+
+
+      ans.className =
+        "answer show";
+
+      ans.innerHTML = "";
+
+
+      const replyText =
+        document.createElement("div");
+
+      replyText.textContent =
+        reply;
+
+      ans.appendChild(replyText);
+
+
+      /*
+       * Pulsante YouTube
+       */
+
+      if (result.youtubeSearch) {
+
+        const youtubeButton =
+          document.createElement("a");
+
+        youtubeButton.href =
+          result.youtubeSearch;
+
+        youtubeButton.target =
+          "_blank";
+
+        youtubeButton.rel =
+          "noopener noreferrer";
+
+        youtubeButton.className =
+          "youtube-button";
+
+        youtubeButton.textContent =
+          "▶️ Cerca video su YouTube";
+
+        ans.appendChild(
+          youtubeButton
+        );
+      }
+
+
+      ta.value = "";
+
+
+    } catch (e) {
+
+      ans.className =
+        "answer show";
+
+      ans.textContent =
+        "❌ Errore: " +
+        e.message;
+    }
+
+
+    btn.disabled = false;
+
+    btn.textContent =
+      "Chiedi all'IA";
+  };
+}
+
+
+/* =========================================================
+   CHIAMATA NETLIFY
+   ========================================================= */
+
+async function askAI(
+  context,
+  userText,
+  history
+) {
+
+  let res;
+
+  let lastErr;
+
+
+  for (
+    let attempt = 0;
+    attempt < 3;
+    attempt++
+  ) {
+
+    try {
+
+      res =
+        await fetch(
+          "/.netlify/functions/chat",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+
+              context:
+                context,
+
+              userText:
+                userText,
+
+              history:
+                history
+            })
+          }
+        );
+
+
+      if (res.ok) {
+        break;
+      }
+
+
+      lastErr =
+        await res.text();
+
+
+      if (
+        res.status >= 500 &&
+        attempt < 2
+      ) {
+
+        await new Promise(
+          r =>
+            setTimeout(
+              r,
+              1500 *
+              (attempt + 1)
+            )
+        );
+
+        continue;
+      }
+
+      break;
+
+
+    } catch (e) {
+
+      lastErr =
+        e.message;
+
+
+      if (attempt < 2) {
+
+        await new Promise(
+          r =>
+            setTimeout(
+              r,
+              1500 *
+              (attempt + 1)
+            )
+        );
+
+        continue;
+      }
+
+
+      throw new Error(
+        "Impossibile contattare il server: " +
+        lastErr
+      );
+    }
+  }
+
+
+  if (
+    !res ||
+    !res.ok
+  ) {
+
+    throw new Error(
+      "Errore server (" +
+      (res
+        ? res.status
+        : "?") +
+      "): " +
+      (lastErr || "")
+        .slice(0, 200)
+    );
+  }
+
+
+  const data =
+    await res.json();
+
+
+  if (data.error) {
+
+    throw new Error(
+      data.error
+    );
+  }
+
+
+  return data;
+}
+
+
+/* =========================================================
+   AVVIO
+   ========================================================= */
+
+render();
+
+</script>
+
+</body>
+</html>
