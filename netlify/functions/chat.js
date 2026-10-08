@@ -40,7 +40,7 @@ exports.handler = async (event) => {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-istant",
+        model: "deepseek/deepseek-v4-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userText }
