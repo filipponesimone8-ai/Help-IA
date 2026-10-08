@@ -1,329 +1,77 @@
-// netlify/functions/chat.js
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-exports.handler = async (event) => {
-
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: "Method Not Allowed"
-    };
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
+    const { context, userText, history } = req.body || {};
+    if (!userText) {
+      return res.status(400).json({ error: "userText mancante" });
+    }
 
-    const {
-      context,
-      userText,
-      history
-    } = JSON.parse(
-      event.body || "{}"
-    );
-
-
-    /*
-     * Chiave OpenRouter.
-     *
-     * IMPORTANTE:
-     * La chiave rimane su Netlify.
-     * NON inserirla qui direttamente.
-     */
-
-    const apiKey =
-      process.env.OPENROUTER_API_KEY;
-
-
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-
-      return {
-        statusCode: 500,
-
-        body: JSON.stringify({
-          error:
-            "Chiave API OpenRouter mancante. Controlla le variabili su Netlify."
-        })
-      };
+      return res.status(500).json({
+        error: "OPENAI_API_KEY non configurata su Vercel"
+      });
     }
 
-
-    if (
-      !userText ||
-      !String(userText).trim()
-    ) {
-
-      return {
-        statusCode: 400,
-
-        body: JSON.stringify({
-          error:
-            "Testo mancante"
-        })
-      };
-    }
-
-
-    const safeContext =
-      context
-        ? String(context).slice(0, 200)
-        : "Generale";
-
-
-    /*
-     * Prompt dell'assistente
-     */
-
-    const systemPrompt = `
-
-Sei HelpIA, un assistente virtuale italiano.
-
-La categoria dell'utente è:
-
-"${safeContext}"
-
-Rispondi sempre in italiano.
-
-Sii chiaro, pratico, naturale e gentile.
-
-Fornisci risposte utili e abbastanza concise.
-
-Tieni conto della conversazione precedente.
-
-Non inventare informazioni.
-
-Se non sei sicuro di qualcosa,
-dillo chiaramente.
-
-Se l'utente chiede un TESTO,
-fornisci direttamente il testo richiesto.
-
-Se l'utente chiede un VIDEO,
-indica che può utilizzare il pulsante YouTube
-presente nella risposta.
-
-Se l'utente chiede TESTO + VIDEO,
-fornisci prima una spiegazione/testo utile
-e poi consenti la ricerca del video su YouTube.
-
-Per problemi di salute,
-fornisci informazioni generali e non fare diagnosi.
-In caso di sintomi gravi o urgenti,
-invita l'utente a rivolgersi tempestivamente
-a un professionista sanitario o ai servizi di emergenza.
-
-Per problemi tecnici,
-spiega passo per passo.
-
-Per musica,
-cucina, tecnologia, motori, animali,
-lavoro e altre categorie,
-adatta la risposta all'argomento.
-
-`;
-
-
-    /*
-     * Costruzione messaggi
-     */
+    const systemPrompt =
+      "Sei HelpIA, un assistente italiano competente e chiaro. " +
+      "Rispondi in italiano, in modo semplice ma completo. " +
+      "Contesto dell'utente: " + (context || "generico") + ".";
 
     const messages = [
-
-      {
-        role: "system",
-        content: systemPrompt
-      }
-
+      { role: "system", content: systemPrompt },
+      ...(Array.isArray(history) ? history : []),
+      { role: "user", content: userText }
     ];
 
-
-    /*
-     * Memoria conversazione
-     */
-
-    if (
-      Array.isArray(history)
-    ) {
-
-      const safeHistory =
-        history
-          .filter(item =>
-            item &&
-            (
-              item.role === "user" ||
-              item.role === "assistant"
-            ) &&
-            typeof item.content === "string"
-          )
-          .slice(-12);
-
-
-      for (
-        const item of safeHistory
-      ) {
-
-        messages.push({
-
-          role:
-            item.role,
-
-          content:
-            item.content
-              .slice(0, 4000)
-
-        });
+    const response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: messages,
+          temperature: 0.7
+        })
       }
-    }
-
-
-    /*
-     * Nuova domanda
-     */
-
-    messages.push({
-
-      role: "user",
-
-      content:
-        String(userText)
-          .slice(0, 4000)
-
-    });
-
-
-    /*
-     * OpenRouter
-     */
-
-    const response =
-      await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-
-          method: "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              `Bearer ${apiKey}`,
-
-            "X-Title":
-              "HelpIA"
-
-          },
-
-          body: JSON.stringify({
-
-            model:
-              "openrouter/free",
-
-            messages:
-              messages,
-
-            temperature:
-              0.7,
-
-            max_tokens:
-              1024
-
-          })
-        }
-      );
-
-
-    const data =
-      await response.json();
-
+    );
 
     if (!response.ok) {
-
-      return {
-
-        statusCode:
-          response.status,
-
-        body:
-          JSON.stringify({
-
-            error:
-              data.error?.message ||
-              "Errore da OpenRouter"
-
-          })
-      };
+      const errText = await response.text();
+      return res.status(response.status).json({
+        error: "Errore OpenAI: " + errText.slice(0, 300)
+      });
     }
 
+    const data = await response.json();
+    const reply =
+      data.choices?.[0]?.message?.content ||
+      "Nessuna risposta ricevuta.";
 
-    /*
-     * Risposta AI
-     */
-
-    const botReply =
-      data.choices?.[0]
-        ?.message?.content ||
-      "Nessuna risposta.";
-
-
-    /*
-     * Link YouTube.
-     *
-     * Per ora non utilizziamo
-     * la YouTube Data API.
-     *
-     * Creiamo una ricerca diretta
-     * su YouTube usando la domanda
-     * dell'utente.
-     */
-
-    const youtubeUrl =
+    const youtubeSearch =
       "https://www.youtube.com/results?search_query=" +
-      encodeURIComponent(
-        `${safeContext} ${userText}`
-      );
+      encodeURIComponent(userText + " " + (context || ""));
 
+    return res.status(200).json({
+      reply: reply,
+      youtubeSearch: youtubeSearch
+    });
 
-    /*
-     * Risposta alla pagina
-     */
-
-    return {
-
-      statusCode: 200,
-
-      headers: {
-
-        "Content-Type":
-          "application/json"
-
-      },
-
-      body:
-        JSON.stringify({
-
-          reply:
-            botReply,
-
-          youtubeSearch:
-            youtubeUrl
-
-        })
-    };
-
-
-  } catch (error) {
-
-    return {
-
-      statusCode: 500,
-
-      body:
-        JSON.stringify({
-
-          error:
-            "Errore interno: " +
-            error.message
-
-        })
-    };
+  } catch (err) {
+    return res.status(500).json({
+      error: "Errore server: " + err.message
+    });
   }
-};
+}
