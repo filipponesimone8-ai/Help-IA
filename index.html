@@ -1167,10 +1167,6 @@ const TREE = [
     ]
   },
 
-  /* =========================================================
-     MUSICA
-     ========================================================= */
-
   {
     label: "Musica",
     emoji: "🎵",
@@ -1707,7 +1703,7 @@ function renderLeaf(node) {
 
 
 /* =========================================================
-   CHIAMATA NETLIFY
+   CHIAMATA VERCEL
    ========================================================= */
 
 async function askAI(
@@ -1731,7 +1727,7 @@ async function askAI(
 
       res =
         await fetch(
-          "/.netlify/functions/chat",
+          "/api/chat",
           {
             method: "POST",
 
